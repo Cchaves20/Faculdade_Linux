@@ -1,0 +1,7 @@
+No exercício 1, tive dificuldade inicial em entender como o filtro do C era chamado no mainasm.s. Esqueci de usar extern filtro, o que dava erro. Depois que arrumei isso, o código compilou normalmente.
+
+No exercício 2, o filtro remove um caractere da string. Testei com "banana" e 'a', e o resultado foi "bnn". No começo achei que não estava funcionando, mas era só erro no printf.
+
+No exercício 3, traduzir a função pro assembly deu trabalho. Errei ao usar os mesmos registradores pro ponteiro de leitura e escrita. Depois que separei eles, funcionou. Também precisei lembrar de colocar o \0 no final.
+
+No exercício 4, fiquei um tempo travado por esquecer de incrementar o ponteiro. Também esqueci de finalizar a string, então ela não imprimia nada. Depois de arrumar isso, funcionou como esperado.

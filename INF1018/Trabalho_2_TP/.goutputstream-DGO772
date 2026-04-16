@@ -1,0 +1,85 @@
+/* att	::=	var ':' varpc  */
+/* expr	::=	var '=' varc op varc */
+/* op	::=	'+' | '-' | '*' */
+/* ret	::=	'ret' varc */
+/* dif	::=	'iflez' var num */
+
+/*
+DICIONARIO:
+
+%ebx = v1
+%r9d = v2
+%r10d = v3
+%r11d = aux
+
+*/
+
+.text
+.globl atribuicao
+atribuicao:
+            pushq %rbp
+            movq %rsp, %rbp
+            subq $16, %rsp
+            movq %rbx, -8(%rbp)
+            
+            movl %ebx, %edi
+            
+            movq -8(%rbp), %rbx
+            leave
+            ret
+            
+.globl soma
+soma:
+            pushq %rbp
+            movq %rsp, %rbp
+            subq $16 ,%rsp
+            
+            movl %r9d, %edi
+            movl %r10d, %esi
+            movl %r10d, %r11d
+            addl %r9d, %r11d
+            movl %r11d, %eax
+            
+            leave
+            ret
+            
+.globl multiplicacao
+multiplicacao:
+            pushq %rbp
+            movq %rsp, %rbp
+            subq $16 %rsp
+            
+            movl %r10d, %r11d
+            imull %r9d, %r11d
+            movl %r11d, %eax
+            
+            leave
+            ret
+            
+.globl subtracao
+subtracao:
+            pushq %rbp
+            movq %rsp, %rbp
+            subq $16 %rsp
+            
+            movl %r10d, %r11d
+            subq %r9d, %r11d
+            movl %r11d, %eax
+            
+            leave
+            ret
+            
+.globl retorno
+retorno:
+            pushq %rbp
+            movq %rsp, %rbp
+            subq $16 %rsp
+            
+            movl %r9d, %eax
+            
+            leave
+            ret
+            
+.globl dif
+dif:
+            

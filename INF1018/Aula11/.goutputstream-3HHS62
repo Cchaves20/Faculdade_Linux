@@ -1,0 +1,9 @@
+.text
+.globl novonum
+novonum:
+	
+	pushq %rbp
+	movq %rsp, %rbp
+	subq $16, %rsp
+	
+	

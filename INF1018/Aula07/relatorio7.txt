@@ -1,0 +1,4 @@
+No exercicio 1, a principio, pensei que o vetor era apenas um vetor de inteiros com numeros aleatorios, ate perceber que havia um ponteiro para char e, apos isso, entendi que os numeros "aleatorios" na verdade eram numeros referenciando a tabela ASCII e apos fazer a correlacao, percebi que o vetor imprimia a palavra "Alo {galera}!".
+No exercicio 2, tive que fazer no codigo C um "if ((*pc != 123)||(*pc != 125))" para printar se o valor do char for diferente de 123 ou 125. No codigo assembly, tive que criar dois "cmpb  $12x, (%r12)" onde substitui o x por 3 e 5 e fiz um je L3 apos os cmp onde L3 era a parte do print em assembly. Apos fazer isso, o codigo funcionou e removeu as chaves da frase.
+No exercicio 3, eu nao entendi o que era pra fazer, logo, fui pedir ajuda para o monitor e o mesmo me ajudou a montar o codigo, assim, consegui imprimir os quadrados perfeitos.
+Exercicio 4: duvidas tiradas em aula.

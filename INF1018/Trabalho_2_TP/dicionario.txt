@@ -1,0 +1,20 @@
+/* att	::=	var ':' varpc  */
+/* expr	::=	var '=' varc op varc */
+/* op	::=	'+' | '-' | '*' */
+/* ret	::=	'ret' varc */
+/* dif	::=	'iflez' var num */
+
+/*
+DICIONARIO:
+
+%ebx = aux
+%ecx = v1
+%r8d = v2
+%r9d = v3
+%r10d = v4
+%r11d = v5
+%edi = param 1
+%esi = param 2
+%edx = param 3
+
+*/

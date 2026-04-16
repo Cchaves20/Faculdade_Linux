@@ -1,0 +1,5 @@
+No exercicio 1, ao comparar os dois codigos, percebi que o vetor de inteiros e uma variavel global em ambos os codigos, ou seja, em assembly o .data cria as variaveis globais e o .text e aonde se comeca o codigo de fato.
+Os mineumonimos mov, cmp, call, add, je e jmp significam: mover para, compara, chama e adiciona, jump if equal e jump respectivamente, ja as letras b, w, l e q significam: 1 byte, 2 bytes, 4 bytes e 8 bytes respectivamente, os numeros apos os cifroes sao as constantes e apos os mesmos sao os registradores.
+No exercicio 2, tive grande dificuldade para conseguir fazer a traducao, pedi ajuda ao monitor e ele me ajudou.
+No exercicio 3, tive que voltar ao codigo original e tive que fazer a adicao de um L3 para incrementar o ebx com 1 e o r12 com 4 e voltar para o L1
+

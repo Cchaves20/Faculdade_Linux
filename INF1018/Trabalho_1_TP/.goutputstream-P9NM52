@@ -1,0 +1,19 @@
+#include<stdio.h>
+#include<string.h>
+
+int gravacomp (int nstructs, void* valores, char* descritor, FILE* arquivo);
+
+int main (void)
+{
+  
+}
+
+int gravacomp (int nstructs, void* valores, char* descritor, FILE* arquivo)
+{
+  char i;
+  for (size_t descritor[i] ; i < strlen(descritor) + 1 ; i++)
+  {
+    
+  }
+  return 0;
+}

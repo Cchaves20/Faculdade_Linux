@@ -1,0 +1,49 @@
+/*
+int calcula(float f);
+
+double boba (float val) {
+	int i;
+	int pos;
+	double d[5];
+	for (i=0; i<5; i++) {
+		pos = calcula(val);
+		d[pos] += val;
+		}
+	return d[0];
+}
+*/
+
+.text
+.globl boba
+boba:
+	pushq %rbp
+	movq %rsp, %rbp
+	subq $48, %rsp
+	movss %xmm0, -8(rbp)
+	movq %rbx, -16(%rbp)
+	
+	movl $0, %ebx
+	
+FOR:
+	cmpl $5, %ebx
+	je END
+	
+	movss -8(%rbp), %xmm0
+	call calcula
+	
+	movl %eax, %r10d
+	imull $8, %r10d
+	leaq -56(%rbp), %r11
+	movslq %r10d, %r10
+	addq %r10, %r11
+	cvtss2sd -8(%rbp), %xmm0
+	addsd %xmm0, %r11
+	
+	addl $1, %ebx
+	jmp FOR
+	
+END:
+	movsd -56(%rsp), %xmm0
+	movsd -16(%rsp), %rbx
+	leave
+	ret

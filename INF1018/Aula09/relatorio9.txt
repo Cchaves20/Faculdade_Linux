@@ -1,0 +1,5 @@
+No exercício 1, na primeira função, a add, demorei pra entender direito como passar os parâmetros no assembly. Esqueci de usar os registradores corretos (edi, esi), e por isso a função estava somando valores errados. Depois que corrigi, ela passou nos testes do addtest.c.
+
+No exercício 2, fui implementar o fat e achei que estava tudo certo, mas o resultado era zero. Percebi que esqueci de empilhar o valor antigo de %edi antes da recursão e isso bagunçava a pilha. Após arrumar isso com push e pop, consegui fazer a função funcionar, inclusive para fat(5).
+
+No exercício 3, no foo, fiquei confuso com a ordem das operações. A função misturava operações com inteiros e shifts, então demorei pra acertar os registradores e valores intermediários. O footest.c me ajudou bastante a entender o comportamento esperado. Depois de corrigir os valores intermediários, funcionou.

@@ -1,0 +1,27 @@
+Joao Paulo Frighetto
+Caio Faria Brito
+
+testes realizados:
+
+struct 1: int -2; char* 'abcd'; unsigned int 258; 
+struct 2: int 2; char* 'ABCD'; unsigned int 65535
+
+saida com os testes acima:
+
+Estruturas: 2
+
+(int) -2 (fffffffe)
+(str) abcd
+(uns) 0 (00000000)
+
+(int) 258 (00000102)
+(str) 
+(uns) 1145258561 (44434241)
+
+o que esta funcionando:
+
+a mostracomp e a gravacomp estao funcionando com exito, mostrando as saidas esperadas para os testes acima.
+
+o que nao esta funcionando:
+
+na gravacomp, a funcao de remover os bytes de padding nao esta funcionando e nao conseguimos resolver tal problema.

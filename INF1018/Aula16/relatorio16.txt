@@ -1,0 +1,7 @@
+No exercicio 1, primeiro tentei compilar temp1.c e temp2.c juntos (gcc temp1.c temp2.c -o temp). O compilador reclamou dizendo “undefined reference” às funções declaradas em temp1.h. Descobri que eu havia esquecido de incluir temp2.h dentro de temp2.c; o linker não enxergava as definições porque o protótipo estava diferente (faltava o extern). Ajustei os #include nos dois arquivos e a compilação passou.
+
+No exercício 2, nessa parte o lab pedia gerar os objetos separados (gcc -c temp1.c e gcc -c temp2.c) e depois ligar tudo com gcc temp1.o temp2.o -o temp. Fiz isso para inspecionar com nm quais símbolos ficavam em cada objeto. Vi que temp1.o exportava celsius2fahrenheit, enquanto temp2.o exportava fahrenheit2celsius. Quando embaralhei a ordem dos objetos no link (gcc temp2.o temp1.o -o temp) continuou funcionando, reforçando que o linker resolve as dependências independentemente da ordem desde que não sejam bibliotecas estáticas — bom detalhe que veio no enunciado.
+
+No exercicio 3, por fim, criei uma biblioteca compartilhada. Compilei cada módulo com -fPIC e depois:
+gcc -shared -o libtemp.so temp1.o temp2.o
+Depois rodei gcc main.c -L. -ltemp -o main e precisei exportar LD_LIBRARY_PATH=. para executar. Usei ldd main e confirmei que o executável agora dependia de libtemp.so. Achei interessante ver como o tamanho final ficou bem menor em comparação à versão totalmente estática.

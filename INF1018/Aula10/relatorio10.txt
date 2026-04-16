@@ -1,0 +1,5 @@
+No exercício 1, comecei pelo add1.s e logo percebi que a função deveria retornar a soma de dois números, mas modificando apenas o primeiro. No começo, esqueci que a convenção diz que o retorno deve estar em %eax, então não aparecia nada no test1.c. Corrigi isso e passou no teste.
+
+No exercício 2, o ind.c me confundiu um pouco por causa do ponteiro para vetor. Tentei acessar diretamente com *a[i], mas não funcionava direito. Depois percebi que precisava usar a notação correta e manipular os valores com cuidado, principalmente pra não acessar posições inválidas.
+
+No exercício 3, na hora de ajustar o ind pro assembly, vi que a indexação indireta podia dar problema se eu não calculasse o deslocamento direito. Esqueci de multiplicar por 4 no começo (por ser int), e a função acessava dados errados. Corrigi isso com um shl $2 e a função passou no teste.

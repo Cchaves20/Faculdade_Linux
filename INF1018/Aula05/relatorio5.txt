@@ -1,0 +1,19 @@
+Na primeira questao, o array B possui 8 bytes, ja o vetor de short possui 12 bytes. Ao realizar o teste, percebi que meu pensamento estava correto.
+Na segunda questao, apos a aula, percebi que a struct em questao tem 2 bytes vazios, pois a mesma so pode armazenar a variavel no espaco da memoria que e multiplo da  quantitade de bytes, ex: na struct em questao, dentro da memoria vai ficar assim: a a a a b b lixo lixo c c c c.
+Na terceira questao:
+A)
+c1 lixo lixo lixo i i i i c2 lixo lixo lixo = 12
+B)
+l l l l l l l l c lixo lixo lixo lixo lixo lixo lixo = 16
+C)
+i i i i c1 lixo lixo lixo c2 lixo lixo lixo = 12
+D)
+l l l l l l l l c lixo lixo lixo lixo lixo lixo lixo c lixo lixo lixo = 20
+E)
+c1 c2 c3 lixo = 4
+F)
+s1 s1 lixo lixo i i i i c c c lixo s2 s2 lixo lixo = 16
+G)
+i i i i i i lixo lixo ou c c c c c c lixo lixo = 8
+H)
+s s s s lixo lixo ou c c c c c lixo = 6

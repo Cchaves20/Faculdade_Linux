@@ -1,0 +1,3 @@
+No exercicio 1, o primeiro exercício me fez pensar bastante sobre como os números de ponto flutuante são armazenados. Usei printf com %a pra exibir os valores em hexadecimal e comparar com o que esperava. No começo achei estranho o formato, mas depois entendi que ele mostra o valor como fração binária com expoente. Isso me ajudou a entender como pequenas diferenças no valor podem representar grandes mudanças na base 2.
+
+No exercício 2, no segundo exercício, o objetivo era gerar valores especiais como +inf, -inf, NaN e -0. Fui testando com divisões como 1.0/0.0, -1.0/0.0 e 0.0/0.0. O mais curioso foi ver que -0.0 realmente existe como valor separado de +0.0. Usei memcmp pra ver a diferença em memória e confirmei que eram representações distintas.

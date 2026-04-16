@@ -1,0 +1,7 @@
+No exercício 1 ,comecei pela função foo que usa float e double. No começo, me confundi com os registradores %xmm, principalmente porque tinha que converter entre float e double. Depois que entendi o uso do cvtsd2ss e cvtss2sd, ficou mais claro. O resultado da expressão (a+b)*(a-b) apareceu certo depois que acertei os registradores.
+
+No exercício 2, a função foo1 era simples: sin(a) + b. O problema foi lembrar que sin só trabalha com double, então tive que converter os float pra double com cvtss2sd, fazer a operação, e converter de volta. Funcionou depois que salvei b na pilha antes do call.
+
+No exercício 3, no foo2, eu precisava somar sin(a) com cos(b). Errei de início porque estava sobrescrevendo %xmm0 antes de chamar o cos. Depois que passei a e b pra memória (-8 e -16(%rbp)), deu tudo certo.
+
+No exercício 4, essa função dava sin de cada valor do vetor e somava tudo. O laço foi o mais chato: precisei controlar os incrementos manualmente (a++ virando addq $8, %rdi) e manter o acumulador em %xmm1. Também precisei guardar e restaurar %rbx, senão o programa dava erro no final. Funcionou tudo depois disso.

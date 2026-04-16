@@ -1,0 +1,6 @@
+v1 : p1      // 1: obtem primeiro argumento
+v2 : p2      // 2: obtem segundo argumento
+v3 = v1 + v2 // 3: calcula a soma
+v4 = v1 - v2 // 4: calcula a diferença
+v1 = v3 * v4 // 5: multiplica
+ret v1       // 6: retorna o resultado

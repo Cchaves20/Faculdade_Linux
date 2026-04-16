@@ -1,0 +1,50 @@
+/*
+(a) (1,5 pontos)
+int corta(char c1, int b)
+{
+	return c1 + b;
+}
+(b) (3,5 pontos)
+int buba(char *v, int n, char c)
+{
+	int i, s = 0;
+	for (i=0; i<n; i++)
+	{
+		if (v[i] <= c)
+		s += corta(v[i], n);
+	}
+	return s;
+}
+*/
+
+.globl corta
+corta:
+	pushq %rbp
+	movq %rsp, %rbp
+	addl %edi, %esi
+	movl %esi, %eax
+	leave
+	ret
+
+.globl buba
+buba:
+	pushq %rbp
+	movq %rsp, %rbp
+	movl $0, %eax
+	
+for:
+	cmpl %eax, %esi
+	jg fim
+	
+	cmpl %rdi(eax), %dl
+	jge if
+	
+	jmp skip
+
+if:
+	
+	addl %eax call corta
+	
+skip:
+
+	

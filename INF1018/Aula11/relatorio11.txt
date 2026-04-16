@@ -1,0 +1,3 @@
+No exercicio 1, a função novonum basicamente lê um número do usuário e retorna. No assembly, me confundi no início com o uso do leaq -4(%rbp), %rsi no scanf. Estava tentando usar movq e não funcionava. Depois que entendi que era pra passar o endereço, funcionou. Também achei estranho usar -4(%rbp) direto em %rax, mas percebi que funcionava pra pegar o valor do int.
+
+No exercício 2, no ex2.c, usei a função do ex1.h para testar o novonum. Achei que daria erro de ligação, mas estava tudo certo porque os arquivos estavam sendo compilados juntos. A entrada e saída funcionaram normal, e consegui capturar o número digitado.

@@ -1,0 +1,5 @@
+No exercício 1, o objetivo era entender o código de máquina gerado a partir de funções simples. No ex1.c, escrevi uma função foo que somava 1 ao argumento e retornei. Quando compilei com -S, vi que o assembly gerado era praticamente igual ao que está no foo.s. Confirmei que o addl $1, %edi estava somando corretamente e movendo o valor pra %eax.
+
+No exercício 2, no ex2.c, testei outra função foo, mas dessa vez chamei uma função auxiliar add. A função em assembly (foo2.s) tinha um call add, como esperado. Vi que o resto da função era só empilhar e desempilhar o rbp. Esse teste me ajudou a perceber como o call altera o fluxo e empilha o endereço de retorno.
+
+No exercício 3, o ex3.c envolvia montar o binário e observar o código de máquina gerado com objdump. Achei interessante ver como o mesmo código em C gera instruções diferentes dependendo da otimização. Também reparei como algumas instruções simples, como add, viram sequências bem compactas no binário final.
