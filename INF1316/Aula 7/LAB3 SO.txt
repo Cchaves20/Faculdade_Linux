@@ -1,0 +1,15 @@
+Programar funcionalidades dos utilitários do unix - “echo” 
+dando o nome de “meuecho” ao seu programa
+Ex: $meuecho bom dia   /* exibe os parâmetros de meuecho */
+
+$bom dia
+
+Programar funcionalidades do utilitário do unix “cat” dando 
+o nome de “meucat” ao seu programa
+
+Ex: $meucat echo.c cat.c /* exibe os arquivos echo.c e cat.c */
+
+Programar as funcionalidades da shell e executar os seus 
+programas meuecho, meucat
+
+Com a sua shell executar o utilitário  “ls” do Unix
