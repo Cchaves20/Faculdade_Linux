@@ -27,10 +27,10 @@ FOR:
     cmpl %ebx %esi
     jg FIM
 
-    cmpb (%edi, %ebx, 1) %dl
+    cmpb (%edi, %ebx, 1), %dl
     jg SKIP
 
-IF
+IF:
     movb (%edi, %ebx, 1), %dil
     call corta
     addl %eax, %r12d
@@ -39,11 +39,11 @@ SKIP:
     addl $1, %ebx
     jmp FOR
 
-FIM
+FIM:
     movl %r12d, %eax
 
     movq -8(%rbp), %rbx
-    movq -16(%rbp), %r12
-
+    movq -16(rbp), %r12
+    
     leave
     ret
