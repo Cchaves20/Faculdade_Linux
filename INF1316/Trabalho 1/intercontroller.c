@@ -20,7 +20,10 @@ int main(int argc, char **argv) {
 
     mem = abrir_memoria(nome_memoria);
 
-    log_evento(mem->tempo_simulacao, "IC", "InterControllerSim iniciado", -1);
+    log_evento(mem->tempo_simulacao,
+               "IC",
+               "InterControllerSim iniciado",
+               -1);
 
     while (!mem->encerrar) {
         sleep(TIME_SLICE);
@@ -29,16 +32,24 @@ int main(int argc, char **argv) {
             break;
         }
 
-        mem->tempo_simulacao += TIME_SLICE;
+        mem->tempo_simulacao++;
 
-        log_evento(mem->tempo_simulacao, "IC", "gerou IRQ0: fim de time-slice", -1);
+        log_evento(mem->tempo_simulacao,
+                   "IC",
+                   "gerou IRQ0 por fim de time-slice",
+                   -1);
+
         kill(pid_kernel, SINAL_IRQ0);
 
         if (mem->bloqueados_qtd > 0) {
             contador_io++;
 
             if (contador_io >= TEMPO_IO) {
-                log_evento(mem->tempo_simulacao, "IC", "gerou IRQ1: fim de E/S em D1", -1);
+                log_evento(mem->tempo_simulacao,
+                           "IC",
+                           "gerou IRQ1 por fim de E/S em D1",
+                           -1);
+
                 kill(pid_kernel, SINAL_IRQ1);
                 contador_io = 0;
             }
@@ -47,7 +58,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    log_evento(mem->tempo_simulacao, "IC", "encerrando InterControllerSim", -1);
+    log_evento(mem->tempo_simulacao,
+               "IC",
+               "encerrando InterControllerSim",
+               -1);
 
     munmap(mem, sizeof(MemoriaCompartilhada));
 

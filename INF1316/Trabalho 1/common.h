@@ -96,19 +96,6 @@ static inline const char *nome_estado(int estado) {
     }
 }
 
-static inline void log_evento(int tempo, const char *processo, const char *explicacao, int pc) {
-    if (pc >= 0) {
-        printf("%05d | %-10s | %-70s | PC=%d\n", tempo, processo, explicacao, pc);
-    } else {
-        printf("%05d | %-10s | %-70s | PC=-\n", tempo, processo, explicacao);
-    }
-}
-
-static inline void imprimir_cabecalho_log(void) {
-    printf("Tempo | Processo   | Explicacao                                                             | PC\n");
-    printf("------|------------|------------------------------------------------------------------------|------\n");
-}
-
 static inline void dormir_ms(long ms) {
     struct timespec tempo;
 
@@ -140,6 +127,30 @@ static inline MemoriaCompartilhada *abrir_memoria(const char *nome_memoria) {
     close(fd);
 
     return (MemoriaCompartilhada *)addr;
+}
+
+static inline void imprimir_cabecalho_linha_do_tempo(void) {
+    printf("\n");
+    printf("Tempo | Processo | Explicacao                                      | PC\n");
+    printf("------+----------+------------------------------------------------+------\n");
+}
+
+static inline void log_evento(int tempo,
+                              const char *processo,
+                              const char *explicacao,
+                              int pc) {
+    if (pc >= 0) {
+        printf("T=%02d  | %-8s | %-46s | PC=%d\n",
+               tempo,
+               processo,
+               explicacao,
+               pc);
+    } else {
+        printf("T=%02d  | %-8s | %-46s | PC=-\n",
+               tempo,
+               processo,
+               explicacao);
+    }
 }
 
 #endif

@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
     int pc;
 
     char op;
-    char nome_app[16];
-    char explicacao[128];
+    char nome_processo[16];
+    char texto[80];
 
     const char *nome_memoria;
     pid_t pid_kernel;
@@ -57,42 +57,52 @@ int main(int argc, char **argv) {
 
     mem = abrir_memoria(nome_memoria);
 
-    snprintf(nome_app, sizeof(nome_app), "A%d", id + 1);
-    snprintf(explicacao, sizeof(explicacao), "criado e aguardando primeira execucao. PID=%d", getpid());
-    log_evento(mem->tempo_simulacao, nome_app, explicacao, -1);
+    snprintf(nome_processo, sizeof(nome_processo), "A%d", id + 1);
+
+    log_evento(mem->tempo_simulacao,
+               nome_processo,
+               "processo criado e parado inicialmente",
+               0);
 
     raise(SIGSTOP);
 
     for (pc = 1; pc <= MAX_PC; pc++) {
         mem->apps[id].pc = pc;
 
-        snprintf(explicacao, sizeof(explicacao), "executando instrucao da aplicacao. PID=%d", getpid());
-        log_evento(mem->tempo_simulacao, nome_app, explicacao, pc);
+        log_evento(mem->tempo_simulacao,
+                   nome_processo,
+                   "executando na CPU",
+                   pc);
 
         sleep(1);
 
         if (deve_fazer_syscall(id, pc, &op)) {
-            snprintf(explicacao, sizeof(explicacao), "chamou syscall(D1,%c)", op);
-            log_evento(mem->tempo_simulacao, nome_app, explicacao, pc);
+            snprintf(texto,
+                     sizeof(texto),
+                     "solicitou syscall(D1,%c)",
+                     op);
+
+            log_evento(mem->tempo_simulacao,
+                       nome_processo,
+                       texto,
+                       pc);
 
             mem->syscall_app = id;
             mem->syscall_pc = pc;
             mem->syscall_op = op;
-            mem->apps[id].estado = BLOQUEADO_IO;
 
             kill(pid_kernel, SINAL_SYSCALL);
 
-            while (mem->apps[id].estado != EXECUTANDO &&
-                   mem->apps[id].estado != FINALIZADO) {
-                dormir_ms(50);
-            }
+            raise(SIGSTOP);
         }
     }
 
     mem->apps[id].pc = MAX_PC;
 
-    snprintf(explicacao, sizeof(explicacao), "terminou todas as %d iteracoes", MAX_PC);
-    log_evento(mem->tempo_simulacao, nome_app, explicacao, MAX_PC);
+    log_evento(mem->tempo_simulacao,
+               nome_processo,
+               "terminou todas as iteracoes",
+               MAX_PC);
 
     kill(pid_kernel, SINAL_FIM);
 
