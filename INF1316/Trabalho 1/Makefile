@@ -2,19 +2,17 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c11
 LDFLAGS = -lrt
 
-all: kernel app intercontroller
+PROGS = kernel app intercontroller
 
-kernel: kernel.c common.h
-	$(CC) $(CFLAGS) kernel.c -o kernel $(LDFLAGS)
+all: $(PROGS)
 
-app: app.c common.h
-	$(CC) $(CFLAGS) app.c -o app $(LDFLAGS)
-
-intercontroller: intercontroller.c common.h
-	$(CC) $(CFLAGS) intercontroller.c -o intercontroller $(LDFLAGS)
+%: %.c common.h
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
 run: all
 	./kernel 3
 
 clean:
-	rm -f kernel app intercontroller
+	rm -f $(PROGS)
+
+.PHONY: all run clean
