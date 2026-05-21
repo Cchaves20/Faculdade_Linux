@@ -1,29 +1,28 @@
 #include "common.h"
 
-#define MAX_SYSCALLS 4
+static int syscall_do_pc(int n_apps, int id, int pc, char *op) {
+    if (n_apps == 3) {
+        return 0; // cenário 1: A1, A2 e A3 sem I/O
+    }
 
-static const int pcs_syscall[MAX_APPS][MAX_SYSCALLS] = {
-    {3, 7, -1, -1},
-    {4, -1, -1, -1},
-    {2, 6, -1, -1},
-    {5, -1, -1, -1},
-    {3, 8, -1, -1},
-    {2, 9, -1, -1}
-};
+    if (n_apps == 6) {
+        if (id == 2 && pc == 2) { // A3
+            *op = 'R';
+            return 1;
+        }
 
-static const char ops_syscall[MAX_APPS][MAX_SYSCALLS] = {
-    {'R', 'W', 0, 0},
-    {'W', 0, 0, 0},
-    {'R', 'W', 0, 0},
-    {'R', 0, 0, 0},
-    {'W', 'R', 0, 0},
-    {'R', 'W', 0, 0}
-};
+        if (id == 2 && pc == 6) { // A3
+            *op = 'W';
+            return 1;
+        }
 
-static int syscall_do_pc(int id, int pc, char *op) {
-    for (int i = 0; i < MAX_SYSCALLS; i++) {
-        if (pcs_syscall[id][i] == pc) {
-            *op = ops_syscall[id][i];
+        if (id == 5 && pc == 2) { // A6
+            *op = 'R';
+            return 1;
+        }
+
+        if (id == 5 && pc == 9) { // A6
+            *op = 'W';
             return 1;
         }
     }
@@ -76,7 +75,7 @@ int main(int argc, char **argv) {
 
         sleep(1);
 
-        if (syscall_do_pc(id, pc, &op)) {
+        if (syscall_do_pc(mem->n_apps, id, pc, &op)) {
             char texto[80];
 
             snprintf(texto, sizeof(texto), "solicitou syscall(D1,%c)", op);
