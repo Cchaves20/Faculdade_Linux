@@ -2,9 +2,13 @@
 
 #include <sys/wait.h>
 
-static int fila_tem(int fila[], int ini, int qtd, int valor) {
+static int ignorar_proximo_irq0 = 0;
+
+static int existe_na_fila(int fila[], int ini, int qtd, int valor) {
     for (int i = 0; i < qtd; i++) {
-        if (fila[(ini + i) % TAM_FILA] == valor) {
+        int pos = (ini + i) % TAM_FILA;
+
+        if (fila[pos] == valor) {
             return 1;
         }
     }
@@ -41,13 +45,24 @@ static void colocar_pronto(MemoriaCompartilhada *mem, int id) {
         return;
     }
 
-    if (mem->apps[id].estado == FINALIZADO ||
-        mem->apps[id].estado == BLOQUEADO_IO ||
-        fila_tem(mem->fila_prontos, mem->prontos_ini, mem->prontos_qtd, id)) {
+    if (mem->apps[id].terminou ||
+        mem->apps[id].estado == FINALIZADO) {
         return;
     }
 
-    enfileirar(mem->fila_prontos, &mem->prontos_fim, &mem->prontos_qtd, id);
+    if (existe_na_fila(mem->fila_prontos,
+                       mem->prontos_ini,
+                       mem->prontos_qtd,
+                       id)) {
+        return;
+    }
+
+    mem->apps[id].estado = PRONTO;
+
+    enfileirar(mem->fila_prontos,
+               &mem->prontos_fim,
+               &mem->prontos_qtd,
+               id);
 }
 
 static int tirar_pronto(MemoriaCompartilhada *mem) {
@@ -56,7 +71,10 @@ static int tirar_pronto(MemoriaCompartilhada *mem) {
                                &mem->prontos_ini,
                                &mem->prontos_qtd);
 
-        if (id >= 0 && mem->apps[id].estado == PRONTO) {
+        if (id >= 0 &&
+            id < mem->n_apps &&
+            mem->apps[id].estado == PRONTO &&
+            !mem->apps[id].terminou) {
             return id;
         }
     }
@@ -65,6 +83,10 @@ static int tirar_pronto(MemoriaCompartilhada *mem) {
 }
 
 static void colocar_bloqueado(MemoriaCompartilhada *mem, int id) {
+    if (id < 0 || id >= mem->n_apps) {
+        return;
+    }
+
     enfileirar(mem->fila_bloqueados,
                &mem->bloqueados_fim,
                &mem->bloqueados_qtd,
@@ -77,41 +99,35 @@ static int tirar_bloqueado(MemoriaCompartilhada *mem) {
                          &mem->bloqueados_qtd);
 }
 
-static void nome_app(int id, char *destino, size_t tamanho) {
-    snprintf(destino, tamanho, "A%d", id + 1);
-}
-
-static int buscar_app_por_pid(MemoriaCompartilhada *mem, pid_t pid) {
-    for (int i = 0; i < mem->n_apps; i++) {
-        if (mem->apps[i].pid == pid) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 static void imprimir_tabela(MemoriaCompartilhada *mem) {
-    char texto[256] = "";
+    char texto[256];
     int usado = 0;
 
-    for (int i = 0; i < mem->n_apps && usado < (int)sizeof(texto); i++) {
+    texto[0] = '\0';
+
+    for (int i = 0; i < mem->n_apps; i++) {
         usado += snprintf(texto + usado,
                           sizeof(texto) - (size_t)usado,
                           "A%d{%s,PC=%d} ",
                           i + 1,
                           nome_estado(mem->apps[i].estado),
                           mem->apps[i].pc);
+
+        if (usado >= (int)sizeof(texto)) {
+            break;
+        }
     }
 
     log_evento(mem->tempo_simulacao, "KERNEL", texto, -1);
 }
 
 static void escalonar_proximo(MemoriaCompartilhada *mem) {
-    int id = tirar_pronto(mem);
+    int proximo = tirar_pronto(mem);
+    char processo[16];
 
-    if (id == -1) {
+    if (proximo == -1) {
         mem->rodando = -1;
+
         log_evento(mem->tempo_simulacao,
                    "KERNEL",
                    "nenhum processo pronto: CPU ociosa",
@@ -119,54 +135,63 @@ static void escalonar_proximo(MemoriaCompartilhada *mem) {
         return;
     }
 
-    char processo[16];
+    mem->rodando = proximo;
+    mem->apps[proximo].estado = EXECUTANDO;
 
-    mem->rodando = id;
-    mem->apps[id].estado = EXECUTANDO;
+    snprintf(processo, sizeof(processo), "A%d", proximo + 1);
 
-    nome_app(id, processo, sizeof(processo));
     log_evento(mem->tempo_simulacao,
                processo,
                "escalonado pelo KernelSim com SIGCONT",
-               mem->apps[id].pc);
+               mem->apps[proximo].pc);
 
-    kill(mem->apps[id].pid, SIGCONT);
-}
-
-static void parar_atual(MemoriaCompartilhada *mem) {
-    int id = mem->rodando;
-    char processo[16];
-
-    if (id == -1 || mem->apps[id].estado != EXECUTANDO) {
-        return;
-    }
-
-    nome_app(id, processo, sizeof(processo));
-    log_evento(mem->tempo_simulacao,
-               processo,
-               "interrompido pelo KernelSim com SIGSTOP",
-               mem->apps[id].pc);
-
-    kill(mem->apps[id].pid, SIGSTOP);
-
-    mem->apps[id].estado = PRONTO;
-    colocar_pronto(mem, id);
-    mem->rodando = -1;
+    kill(mem->apps[proximo].pid, SIGCONT);
 }
 
 static void tratar_irq0(MemoriaCompartilhada *mem) {
+    int atual = mem->rodando;
+    char processo[16];
+
+    if (ignorar_proximo_irq0) {
+        ignorar_proximo_irq0 = 0;
+
+        log_evento(mem->tempo_simulacao,
+                   "KERNEL",
+                   "IRQ0 ignorado para manter ordem do escalonamento",
+                   -1);
+        return;
+    }
+
     log_evento(mem->tempo_simulacao,
                "KERNEL",
                "recebeu IRQ0: fim do time-slice",
                -1);
 
-    parar_atual(mem);
+    if (atual != -1 &&
+        atual < mem->n_apps &&
+        mem->apps[atual].estado == EXECUTANDO &&
+        !mem->apps[atual].terminou) {
+        snprintf(processo, sizeof(processo), "A%d", atual + 1);
+
+        log_evento(mem->tempo_simulacao,
+                   processo,
+                   "interrompido pelo KernelSim com SIGSTOP",
+                   mem->apps[atual].pc);
+
+        kill(mem->apps[atual].pid, SIGSTOP);
+
+        colocar_pronto(mem, atual);
+    }
+
+    mem->rodando = -1;
+
     escalonar_proximo(mem);
     imprimir_tabela(mem);
 }
 
 static void tratar_irq1(MemoriaCompartilhada *mem) {
     int id = tirar_bloqueado(mem);
+    char processo[16];
 
     log_evento(mem->tempo_simulacao,
                "KERNEL",
@@ -181,15 +206,13 @@ static void tratar_irq1(MemoriaCompartilhada *mem) {
         return;
     }
 
-    char processo[16];
+    snprintf(processo, sizeof(processo), "A%d", id + 1);
 
-    nome_app(id, processo, sizeof(processo));
     log_evento(mem->tempo_simulacao,
                processo,
                "E/S terminou, voltou para fila de prontos",
                mem->apps[id].syscall_pc);
 
-    mem->apps[id].estado = PRONTO;
     colocar_pronto(mem, id);
 
     if (mem->rodando == -1) {
@@ -201,12 +224,19 @@ static void tratar_irq1(MemoriaCompartilhada *mem) {
 
 static void tratar_syscall(MemoriaCompartilhada *mem, pid_t pid_emissor) {
     int id = mem->syscall_app;
+    char processo[16];
+    char texto[80];
 
     if (id < 0 || id >= mem->n_apps) {
-        id = buscar_app_por_pid(mem, pid_emissor);
+        for (int i = 0; i < mem->n_apps; i++) {
+            if (mem->apps[i].pid == pid_emissor) {
+                id = i;
+                break;
+            }
+        }
     }
 
-    if (id == -1) {
+    if (id < 0 || id >= mem->n_apps) {
         log_evento(mem->tempo_simulacao,
                    "KERNEL",
                    "syscall ignorada: processo desconhecido",
@@ -214,17 +244,21 @@ static void tratar_syscall(MemoriaCompartilhada *mem, pid_t pid_emissor) {
         return;
     }
 
-    char processo[16];
-    char texto[80];
+    snprintf(processo, sizeof(processo), "A%d", id + 1);
 
-    nome_app(id, processo, sizeof(processo));
-    snprintf(texto, sizeof(texto), "KernelSim recebeu syscall(D1,%c)", mem->syscall_op);
+    snprintf(texto,
+             sizeof(texto),
+             "KernelSim recebeu syscall(D1,%c)",
+             mem->syscall_op);
 
-    log_evento(mem->tempo_simulacao, processo, texto, mem->syscall_pc);
+    log_evento(mem->tempo_simulacao,
+               processo,
+               texto,
+               mem->syscall_pc);
 
     mem->apps[id].estado = BLOQUEADO_IO;
-    mem->apps[id].syscall_op = mem->syscall_op;
     mem->apps[id].syscall_pc = mem->syscall_pc;
+    mem->apps[id].syscall_op = mem->syscall_op;
 
     colocar_bloqueado(mem, id);
 
@@ -245,21 +279,29 @@ static void tratar_syscall(MemoriaCompartilhada *mem, pid_t pid_emissor) {
 
     if (mem->rodando == -1) {
         escalonar_proximo(mem);
+        ignorar_proximo_irq0 = 1;
     }
 
     imprimir_tabela(mem);
 }
 
 static void tratar_fim(MemoriaCompartilhada *mem, pid_t pid_emissor) {
-    int id = buscar_app_por_pid(mem, pid_emissor);
+    int id = -1;
+    char processo[16];
+
+    for (int i = 0; i < mem->n_apps; i++) {
+        if (mem->apps[i].pid == pid_emissor) {
+            id = i;
+            break;
+        }
+    }
 
     if (id == -1) {
         return;
     }
 
-    char processo[16];
+    snprintf(processo, sizeof(processo), "A%d", id + 1);
 
-    nome_app(id, processo, sizeof(processo));
     log_evento(mem->tempo_simulacao,
                processo,
                "processo finalizado",
@@ -291,8 +333,12 @@ static MemoriaCompartilhada *criar_memoria(const char *nome_memoria) {
         erro("ftruncate");
     }
 
-    void *addr = mmap(NULL, sizeof(MemoriaCompartilhada),
-                      PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void *addr = mmap(NULL,
+                      sizeof(MemoriaCompartilhada),
+                      PROT_READ | PROT_WRITE,
+                      MAP_SHARED,
+                      fd,
+                      0);
 
     if (addr == MAP_FAILED) {
         erro("mmap");
@@ -301,7 +347,7 @@ static MemoriaCompartilhada *criar_memoria(const char *nome_memoria) {
     close(fd);
     memset(addr, 0, sizeof(MemoriaCompartilhada));
 
-    return addr;
+    return (MemoriaCompartilhada *)addr;
 }
 
 static void criar_app(MemoriaCompartilhada *mem,
@@ -320,19 +366,23 @@ static void criar_app(MemoriaCompartilhada *mem,
         snprintf(id_txt, sizeof(id_txt), "%d", id);
         snprintf(pid_kernel_txt, sizeof(pid_kernel_txt), "%d", mem->pid_kernel);
 
-        execl("./app", "app", id_txt, nome_memoria, pid_kernel_txt, NULL);
+        execl("./app",
+              "app",
+              id_txt,
+              nome_memoria,
+              pid_kernel_txt,
+              NULL);
+
         erro("execl app");
     }
 
-    mem->apps[id] = (PCB) {
-        .pid = pid,
-        .id = id,
-        .pc = 0,
-        .estado = PRONTO,
-        .terminou = 0,
-        .syscall_pc = 0,
-        .syscall_op = 0
-    };
+    mem->apps[id].pid = pid;
+    mem->apps[id].id = id;
+    mem->apps[id].pc = 0;
+    mem->apps[id].estado = PRONTO;
+    mem->apps[id].terminou = 0;
+    mem->apps[id].syscall_pc = 0;
+    mem->apps[id].syscall_op = 0;
 
     colocar_pronto(mem, id);
 }
@@ -362,72 +412,80 @@ static void criar_intercontroller(MemoriaCompartilhada *mem,
     mem->pid_intercontroller = pid;
 }
 
-static void preparar_sinais(sigset_t *sinais) {
-    sigemptyset(sinais);
-    sigaddset(sinais, SINAL_IRQ0);
-    sigaddset(sinais, SINAL_IRQ1);
-    sigaddset(sinais, SINAL_SYSCALL);
-    sigaddset(sinais, SINAL_FIM);
-
-    if (sigprocmask(SIG_BLOCK, sinais, NULL) == -1) {
-        erro("sigprocmask");
-    }
-}
-
-static void finalizar(MemoriaCompartilhada *mem, const char *nome_memoria) {
-    log_evento(mem->tempo_simulacao,
-               "KERNEL",
-               "todos os processos de aplicacao terminaram",
-               -1);
-
-    log_evento(mem->tempo_simulacao,
-               "KERNEL",
-               "encerrando InterControllerSim",
-               -1);
-
-    mem->encerrar = 1;
-    kill(mem->pid_intercontroller, SIGTERM);
-
-    for (int i = 0; i < mem->n_apps; i++) {
-        waitpid(mem->apps[i].pid, NULL, 0);
-    }
-
-    waitpid(mem->pid_intercontroller, NULL, 0);
-
-    munmap(mem, sizeof(MemoriaCompartilhada));
-    shm_unlink(nome_memoria);
-
-    log_evento(0, "KERNEL", "fim da simulacao", -1);
-}
-
 int main(int argc, char **argv) {
-    int n_apps = (argc >= 2) ? atoi(argv[1]) : 3;
+    int n_apps = 3;
+    char nome_memoria[64];
 
-    if (n_apps < MIN_APPS || n_apps > MAX_APPS) {
-        printf("Uso: %s <quantidade_de_apps_3_a_6>\n", argv[0]);
+    MemoriaCompartilhada *mem;
+
+    sigset_t sinais;
+    siginfo_t info;
+
+    if (argc >= 2) {
+        n_apps = atoi(argv[1]);
+    }
+
+    if (n_apps != 3 && n_apps != 6) {
+        printf("Uso: %s <3 ou 6>\n", argv[0]);
+        printf("  3: A1, A2 e A3 sem I/O\n");
+        printf("  6: A1..A6 com I/O apenas em A3 e A6\n");
         return 1;
     }
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    char nome_memoria[64];
     snprintf(nome_memoria, sizeof(nome_memoria), "/trab1_so_%d", getpid());
 
-    MemoriaCompartilhada *mem = criar_memoria(nome_memoria);
+    mem = criar_memoria(nome_memoria);
 
     mem->pid_kernel = getpid();
     mem->n_apps = n_apps;
     mem->vivos = n_apps;
     mem->rodando = -1;
+    mem->tempo_simulacao = 0;
     mem->syscall_app = -1;
 
-    sigset_t sinais;
-    preparar_sinais(&sinais);
+    mem->prontos_ini = 0;
+    mem->prontos_fim = 0;
+    mem->prontos_qtd = 0;
+
+    mem->bloqueados_ini = 0;
+    mem->bloqueados_fim = 0;
+    mem->bloqueados_qtd = 0;
+
+    sigemptyset(&sinais);
+    sigaddset(&sinais, SINAL_IRQ0);
+    sigaddset(&sinais, SINAL_IRQ1);
+    sigaddset(&sinais, SINAL_SYSCALL);
+    sigaddset(&sinais, SINAL_FIM);
+
+    if (sigprocmask(SIG_BLOCK, &sinais, NULL) == -1) {
+        erro("sigprocmask");
+    }
 
     imprimir_cabecalho_linha_do_tempo();
 
-    log_evento(0, "KERNEL", "KernelSim iniciado", -1);
-    log_evento(0, "KERNEL", "memoria compartilhada criada", -1);
+    log_evento(mem->tempo_simulacao,
+               "KERNEL",
+               "KernelSim iniciado",
+               -1);
+
+    if (n_apps == 3) {
+        log_evento(mem->tempo_simulacao,
+                   "KERNEL",
+                   "cenario 1: 3 processos sem I/O",
+                   -1);
+    } else {
+        log_evento(mem->tempo_simulacao,
+                   "KERNEL",
+                   "cenario 2: 6 processos com I/O em A3 e A6",
+                   -1);
+    }
+
+    log_evento(mem->tempo_simulacao,
+               "KERNEL",
+               "memoria compartilhada criada",
+               -1);
 
     for (int i = 0; i < n_apps; i++) {
         criar_app(mem, nome_memoria, i);
@@ -435,6 +493,7 @@ int main(int argc, char **argv) {
     }
 
     criar_intercontroller(mem, nome_memoria);
+
     dormir_ms(500);
 
     log_evento(mem->tempo_simulacao,
@@ -445,7 +504,6 @@ int main(int argc, char **argv) {
     escalonar_proximo(mem);
 
     while (mem->vivos > 0) {
-        siginfo_t info;
         int sinal = sigwaitinfo(&sinais, &info);
 
         if (sinal == -1) {
@@ -467,7 +525,29 @@ int main(int argc, char **argv) {
         }
     }
 
-    finalizar(mem, nome_memoria);
+    log_evento(mem->tempo_simulacao,
+               "KERNEL",
+               "todos os processos de aplicacao terminaram",
+               -1);
+
+    log_evento(mem->tempo_simulacao,
+               "KERNEL",
+               "encerrando InterControllerSim",
+               -1);
+
+    mem->encerrar = 1;
+    kill(mem->pid_intercontroller, SIGTERM);
+
+    for (int i = 0; i < n_apps; i++) {
+        waitpid(mem->apps[i].pid, NULL, 0);
+    }
+
+    waitpid(mem->pid_intercontroller, NULL, 0);
+
+    munmap(mem, sizeof(MemoriaCompartilhada));
+    shm_unlink(nome_memoria);
+
+    log_evento(0, "KERNEL", "fim da simulacao", -1);
 
     return 0;
 }

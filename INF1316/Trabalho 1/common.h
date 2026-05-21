@@ -118,12 +118,17 @@ static inline void log_evento(int tempo,
                               const char *processo,
                               const char *explicacao,
                               int pc) {
-    printf("T=%02d  | %-8s | %-46s | ", tempo, processo, explicacao);
-
     if (pc >= 0) {
-        printf("PC=%d\n", pc);
+        printf("T=%02d  | %-8s | %-46s | PC=%d\n\n",
+               tempo,
+               processo,
+               explicacao,
+               pc);
     } else {
-        puts("PC=-");
+        printf("T=%02d  | %-8s | %-46s | PC=-\n\n",
+               tempo,
+               processo,
+               explicacao);
     }
 }
 
