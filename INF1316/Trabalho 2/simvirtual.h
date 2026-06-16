@@ -1,11 +1,3 @@
-/* sim-virtual.h
- *
- * Estruturas de dados do simulador de memoria virtual.
- * INF1316 - Sistemas Operacionais - Trabalho 2
- *
- * Grupo: Caio Chaves
- */
-
 #ifndef SIM_VIRTUAL_H
 #define SIM_VIRTUAL_H
 

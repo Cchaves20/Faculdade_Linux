@@ -1,14 +1,3 @@
-/* sim-virtual.c
- *
- * Simulador de memoria virtual com paginacao para o Trabalho 2 de INF1316.
- * Implementa os algoritmos de substituicao LRU, NRU, Relogio e Otimo.
- *
- * Uso:  ./sim-virtual <algoritmo> <arquivo.log> <pagina_KB> <memoria_MB>
- * Ex.:  ./sim-virtual LRU arquivo.log 8 2
- *
- * Grupo: Caio Chaves
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
