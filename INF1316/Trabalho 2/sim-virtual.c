@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#include "simvirtual.h"
+#include "sim-virtual.h"
 
 /* De quantos em quantos acessos zeramos os bits R no NRU (simula o tick do
  * relogio do SO, que e quem limparia esses bits periodicamente). */

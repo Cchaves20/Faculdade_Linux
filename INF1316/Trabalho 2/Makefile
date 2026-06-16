@@ -1,12 +1,12 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -O2
 
-PROG = simvirtual
+PROG = sim-virtual
 
 all: $(PROG)
 
-$(PROG): simvirtual.c simvirtual.h
-	$(CC) $(CFLAGS) simvirtual.c -o $(PROG)
+$(PROG): sim-virtual.c sim-virtual.h
+	$(CC) $(CFLAGS) sim-virtual.c -o $(PROG)
 
 clean:
 	rm -f $(PROG)
