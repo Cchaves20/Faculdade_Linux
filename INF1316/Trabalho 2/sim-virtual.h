@@ -1,3 +1,8 @@
+/*
+Nome: Caio Faria Brito Martins Chaves - Matricula: 2410162
+Nome: Lucas Hufnagel Gromann de Araujo Goes - Matricula: 2410845
+*/
+
 #ifndef SIM_VIRTUAL_H
 #define SIM_VIRTUAL_H
 

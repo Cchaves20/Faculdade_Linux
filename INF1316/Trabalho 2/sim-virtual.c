@@ -1,3 +1,8 @@
+/*
+Nome: Caio Faria Brito Martins Chaves - Matricula: 2410162
+Nome: Lucas Hufnagel Gromann de Araujo Goes - Matricula: 2410845
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
