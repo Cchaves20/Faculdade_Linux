@@ -1,0 +1,58 @@
+Corretude dos dois algoritmos em assembly x86-64 — resumo
+
+Ao contrário da prova da versão em C, aqui há uma obrigação extra: em assembly é
+preciso mostrar que o estado do algoritmo sobrevive às chamadas de função, coisa
+que em C o compilador garante sozinho.
+
+
+1. Bubble Sort
+
+O laço interno FOR2 empurra o maior elemento do prefixo ativo até a posição n-i.
+Prova-se por indução em j que, ao chegar no teste com %r13d = j, vale
+A[j] = max(A[0..j]): se A[j] > A[j+1] a troca leva o máximo adiante, e se não,
+A[j+1] já era maior que ele. O incremento de j aparece nos dois ramos, o que faz
+o laço avançar em qualquer caso. Como j cresce de um em um contra o limite fixo
+%r14d = n-1-i, a saída ocorre com j = n-i, e é aí que o máximo fica.
+
+Isso sustenta o invariante do laço externo: após i iterações, o vetor continua
+sendo permutação do original, o sufixo A[n-i..n-1] tem os i maiores elementos já
+ordenados, e todo elemento do prefixo é menor ou igual a todo elemento do sufixo.
+Ele vale trivialmente no início (sufixo vazio) e se mantém porque FOR2 não toca
+em nada acima de n-i, deixando o sufixo pronto intacto. Na saída, com i = n-1,
+o sufixo A[1..n-1] está ordenado e A[0] é menor ou igual a todos — ou seja, o
+vetor inteiro está ordenado.
+
+Quanto às chamadas a imprime: A, i e n-1 estão em %r15, %ebx e %r12d, que são
+callee-saved, e n está no quadro. Nada do estado é perdido, então as chamadas
+são observações puras.
+
+
+2. Quicksort
+
+Três fatos sobre o bloco de 16n bytes aberto na pilha: L e R não se sobrepõem
+(precisam de 8n no total), 16n é múltiplo de 16 e portanto o alinhamento exigido
+pela ABI se mantém nos call, e L e R são disjuntos de A — este último importa
+porque os laços de cópia leem de L e R enquanto escrevem em A.
+
+A partição está correta por indução em i: cada elemento de A[1..n-1] é comparado
+com p e vai para exatamente um dos dois vetores, sempre no final dele, de modo
+que ao sair de FOR1 temos L com os elementos <= p, R com os > p, e nL + nR = n-1.
+Como o pivô é retirado do problema, ambos os subproblemas são estritamente
+menores que n — é isso que faz a recursão terminar.
+
+O estado sobrevive às chamadas recursivas por três razões: os registradores
+%rbx e %r12–%r15 são salvos e restaurados pela própria quicksort; nL, nR e i
+moram no quadro, endereçados por %rbp; e o bloco com L e R está entre %rsp e
+%rbp, enquanto a chamada recursiva monta seu quadro abaixo de %rsp.
+
+O teorema sai por indução forte. Os casos base n <= 1 retornam sem escrever nada.
+No passo, a hipótese forte se aplica a nL e nR, que são ambos no máximo k, e
+devolve L' e R' ordenados. Os três blocos de cópia escrevem em índices disjuntos
+cuja união é 0..n-1, logo cada posição é escrita uma vez; o resultado é permutação
+do original porque L, {p} e R formam o multiconjunto de A. E está ordenado: para
+quaisquer posições a < b, ou ambas caem no mesmo lado (hipótese indutiva), ou
+vale A[a] <= p < A[b], porque tudo em L é <= p e tudo em R é > p.
+
+A indução precisa ser forte porque os tamanhos nL e nR dependem dos dados, não
+são n-1. No vetor [7,3,9,2,8,1,5,4,6] a primeira partição gera 6 e 2 a partir de
+9, e a hipótese fraca daria apenas P(8), que nada diz sobre esses tamanhos.

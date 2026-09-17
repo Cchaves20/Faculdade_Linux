@@ -1,0 +1,80 @@
+Como compilar e executar
+
+Os dois algoritmos são programas independentes: cada um tem o seu próprio
+arquivo .s com a rotina em assembly e o seu próprio main em C, que fornece a
+função imprime e os vetores de teste, rode os seguintes comandos no terminal:
+
+    gcc -Wall -no-pie -o bubblesort main_bubblesort.c bubbleSort.s
+    
+    ./bubblesort
+
+
+    gcc -Wall -no-pie -o quicksort  main_quicksort.c  quicksort.s
+
+    ./quicksort
+
+O gcc aqui faz três coisas numa chamada só: monta o arquivo .s com o GNU
+Assembler, compila o .c, e linka os dois objetos num executável.
+
+
+Warnings depois do gcc podem ser ignorados
+
+
+Resultado esperado:
+
+O bubbleSort imprime o vetor ao final de cada iteração do laço externo, na forma
+A^(i), o que permite acompanhar o invariante: o sufixo ordenado cresce uma
+posição por iteração.
+
+    === Teste 1: vetor com 9 elementos ===
+        A^(0) = [7, 3, 9, 2, 8, 1, 5, 4, 6]
+        A^(1) = [3, 7, 2, 8, 1, 5, 4, 6, 9]
+        A^(2) = [3, 2, 7, 1, 5, 4, 6, 8, 9]
+        A^(3) = [2, 3, 1, 5, 4, 6, 7, 8, 9]
+        A^(4) = [2, 1, 3, 4, 5, 6, 7, 8, 9]
+        A^(5) = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        A^(6) = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        A^(7) = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        A^(8) = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    === Teste 2: vetor com 15 elementos ===
+        A^(0) = [12, 4, 17, 4, 9, 20, 1, 15, 8, 3, 11, 6, 19, 2, 10]
+        A^(1) = [4, 12, 4, 9, 17, 1, 15, 8, 3, 11, 6, 19, 2, 10, 20]
+        A^(2) = [4, 4, 9, 12, 1, 15, 8, 3, 11, 6, 17, 2, 10, 19, 20]
+        A^(3) = [4, 4, 9, 1, 12, 8, 3, 11, 6, 15, 2, 10, 17, 19, 20]
+        A^(4) = [4, 4, 1, 9, 8, 3, 11, 6, 12, 2, 10, 15, 17, 19, 20]
+        A^(5) = [4, 1, 4, 8, 3, 9, 6, 11, 2, 10, 12, 15, 17, 19, 20]
+        A^(6) = [1, 4, 4, 3, 8, 6, 9, 2, 10, 11, 12, 15, 17, 19, 20]
+        A^(7) = [1, 4, 3, 4, 6, 8, 2, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(8) = [1, 3, 4, 4, 6, 2, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(9) = [1, 3, 4, 4, 2, 6, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(10) = [1, 3, 4, 2, 4, 6, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(11) = [1, 3, 2, 4, 4, 6, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(12) = [1, 2, 3, 4, 4, 6, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(13) = [1, 2, 3, 4, 4, 6, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+        A^(14) = [1, 2, 3, 4, 4, 6, 8, 9, 10, 11, 12, 15, 17, 19, 20]
+
+O quicksort imprime, a cada chamada da partição, o vetor recebido, o pivô
+escolhido e os dois subvetores resultantes.
+
+    A = [7, 3, 9, 2, 8, 1, 5, 4, 6]
+    Pivo = 7
+    L = [3, 2, 1, 5, 4, 6]   R = [9, 8]
+
+    A = [3, 2, 1, 5, 4, 6]
+    Pivo = 3
+    L = [2, 1]   R = [5, 4, 6]
+
+    A = [2, 1]
+    Pivo = 2
+    L = [1]   R = []
+
+    A = [5, 4, 6]
+    Pivo = 5
+    L = [4]   R = [6]
+
+    A = [9, 8]
+    Pivo = 9
+    L = [8]   R = []
+
+    Vetor ordenado = [1, 2, 3, 4, 5, 6, 7, 8, 9]
